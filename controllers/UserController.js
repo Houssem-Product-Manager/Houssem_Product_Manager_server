@@ -292,6 +292,91 @@ const changePassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// Forget password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate the email field
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate a reset token
+    const code = Math.floor(100000 + Math.random() * 900000); // 1 hour from now
+
+    // Send reset email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail", // Specify your email service provider
+      auth: {
+        user: "saadliwissem88@gmail.com", // Your email address
+        pass: process.env.MAIL_SENDER_PASS, // Your email password or app-specific password
+      },
+    });
+
+    const mailOptions = {
+      from: "saadliwissem88@gmail.com",
+      to: email,
+      subject: "Password Reset Request",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      this is you verification code ${code}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(500)
+          .json({ error: "Failed to send password reset email" });
+      } else {
+        console.log("Email sent: " + info.response);
+        res.status(200).json({ message: "Password reset email sent" });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Reset password
+const resetPassword = async (req, res) => {
+  try {
+    const { verificationCode, pwd, newPassword } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: "Password reset token is invalid or has expired" });
+    }
+
+    // Hash the new password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password has been reset successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   register,
