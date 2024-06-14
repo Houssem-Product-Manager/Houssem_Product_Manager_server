@@ -8,6 +8,7 @@ const userRoutes = require("./routes/userRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 //const Delivery = require("./models/Delivery");
 const app = express();
+const cloudinary = require("./Cloudinary/cloudinary");
 const bodyParser = require("body-parser");
 
 //cors
