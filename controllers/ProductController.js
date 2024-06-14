@@ -27,7 +27,7 @@ const createProduct = async (req, res) => {
 
     // Upload product image to Cloudinary
     const uploadedImage = await cloudinary.uploader.upload(photo, {
-      public_id: `product_images/${name}`, // Use a meaningful identifier for the file name
+      public_id: `product_images/${name.trim()}`, // Use a meaningful identifier for the file name
       allowed_formats: ["jpg", "jpeg", "png"], // Allow only specific image formats
     });
 
