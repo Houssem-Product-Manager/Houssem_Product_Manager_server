@@ -76,7 +76,7 @@ const sendVerifEmail = (email, verificationCode, res, name) => {
 
   const mailOptions = {
     from: "saadliwissem88@gmail.com",
-    to: "saadliwissem88@gmail.com",
+    to: "houssemr.saadli@gmail.com",
     subject: "Account Verification",
     text: `the user ${name} with email : ${email} wants to create an account here is he's verification code : ${verificationCode} if you want to confirm you can give it to him  `,
   };
