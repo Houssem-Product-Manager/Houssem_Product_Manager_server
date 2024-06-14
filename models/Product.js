@@ -22,6 +22,10 @@ const SaleSchema = new Schema({
     required: true,
     min: 1,
   },
+  size: {
+    type: String,
+    required: true,
+  },
   comment: {
     type: String,
   },
@@ -41,6 +45,19 @@ const ProductSchema = new Schema({
     required: true,
     min: 0,
   },
+  sizes: [
+    {
+      size: {
+        type: String,
+        required: true,
+      },
+      stock: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+    },
+  ],
   photo: {
     type: String, // Assuming this is a URL to the photo
     required: true,

@@ -2,19 +2,31 @@ const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/User");
 
-// Calculate total revenue, profit, and sales volume
+// Calculate total revenue, profit, sales volume, and monthly profits
 const calculateRevenueAndProfit = (products) => {
   let totalRevenue = 0;
   let totalCost = 0;
   let salesVolume = 0;
   let totalMoneySpent = 0;
+  const monthlyProfits = {};
 
   products.forEach((product) => {
     product.sales.forEach((sale) => {
+      const saleMonth = new Date(sale.sellingDate).toISOString().slice(0, 7); // Get the month in YYYY-MM format
       totalRevenue += sale.sellingPrice * sale.quantitySold;
       totalCost += product.buyingPrice * sale.quantitySold;
       salesVolume += sale.quantitySold;
+
+      // Calculate profit for the sale
+      const saleProfit = (sale.sellingPrice - product.buyingPrice) * sale.quantitySold;
+
+      // Add profit to the corresponding month
+      if (!monthlyProfits[saleMonth]) {
+        monthlyProfits[saleMonth] = 0;
+      }
+      monthlyProfits[saleMonth] += saleProfit;
     });
+
     totalMoneySpent +=
       product.buyingPrice *
       (product.numberInStock +
@@ -28,6 +40,7 @@ const calculateRevenueAndProfit = (products) => {
     totalProfit,
     salesVolume,
     totalMoneySpent,
+    monthlyProfits,
   };
 };
 
@@ -78,7 +91,7 @@ const getDashboardStats = async (req, res) => {
       return res.status(404).json({ error: "No products found" });
     }
 
-    const { totalRevenue, totalProfit, salesVolume, totalMoneySpent } =
+    const { totalRevenue, totalProfit, salesVolume, totalMoneySpent, monthlyProfits } =
       calculateRevenueAndProfit(products);
     const bestSellingProducts = getBestSellingProducts(products);
     const productWiseProfit = getProductWiseProfit(products);
@@ -92,6 +105,7 @@ const getDashboardStats = async (req, res) => {
       productWiseProfit,
       inventoryValue,
       totalMoneySpent,
+      monthlyProfits, // Include monthly profits in the response
     });
   } catch (error) {
     console.error(error);

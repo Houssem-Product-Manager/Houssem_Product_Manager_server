@@ -5,8 +5,15 @@ const cloudinary = require("cloudinary").v2; // Ensure cloudinary is properly co
 
 const createProduct = async (req, res) => {
   try {
-    const { name, numberInStock, buyingPrice, buyingDate, photo, priceToSell } =
-      req.body.product;
+    const {
+      name,
+      numberInStock,
+      buyingPrice,
+      buyingDate,
+      photo,
+      priceToSell,
+      sizes,
+    } = req.body;
     const userId = req.userId;
 
     // Check if a product with the same name already exists
@@ -34,6 +41,7 @@ const createProduct = async (req, res) => {
       buyer: userId, // Assign the user ID to the seller field
       buyingDate,
       priceToSell,
+      sizes: sizes.map((size) => ({ size: size.size, stock: size.stock })),
     });
 
     // Save the new product to the database
@@ -121,13 +129,15 @@ const updateProduct = async (req, res) => {
       buyingDate,
       photo,
       priceToSell,
-    } = req.body.product;
+      sizes,
+    } = req.body;
 
     let updateData = {
       name,
       numberInStock,
       sellingPrice,
       priceToSell,
+      sizes: sizes.map((size) => ({ size: size.size, stock: size.stock })),
     };
 
     // Only include buyingDate in updateData if it is not null
@@ -163,18 +173,19 @@ const sellProduct = async (req, res) => {
   try {
     const id = req.params.productId;
     const sellerId = req.userId;
-    const { sellingPrice, qte, comment } = req.body;
+    const { sellingPrice, qte, comment, size } = req.body;
     const product = await Product.findById(id);
 
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    if (product.numberInStock <= 0) {
-      return res.status(400).json({ error: "Product is out of stock" });
-    }
-    if (!sellingPrice) {
-      return res.status(400).json({ error: "selling price is required" });
+    const sizeRecord = product.sizes.find((s) => s.size === size);
+
+    if (!sizeRecord || sizeRecord.stock < qte) {
+      return res
+        .status(400)
+        .json({ error: "Insufficient stock for the selected size" });
     }
 
     // Create a new sales record
@@ -182,11 +193,13 @@ const sellProduct = async (req, res) => {
       seller: sellerId,
       sellingPrice,
       quantitySold: qte,
-      comment
+      size,
+      comment,
     };
 
     // Update the product's number in stock and add the sales record
     product.numberInStock -= Number(qte);
+    sizeRecord.stock -= Number(qte);
     product.sales.push(saleRecord);
 
     await product.save();
