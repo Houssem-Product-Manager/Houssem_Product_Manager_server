@@ -8,7 +8,7 @@ const userSchema = new Schema({
   verificationCode: { type: String, required: true },
   img: { type: String },
   verified: { type: Boolean, required: false, default: false },
-  balance: { type: Number },
+  forgetPwdCode: { type: Number },
 });
 
 const User = mongoose.model("User", userSchema);

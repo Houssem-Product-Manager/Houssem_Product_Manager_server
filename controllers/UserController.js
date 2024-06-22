@@ -339,6 +339,8 @@ const forgotPassword = async (req, res) => {
         res.status(200).json({ message: "Password reset email sent" });
       }
     });
+    user.forgetPwdCode = code;
+    await user.save();
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

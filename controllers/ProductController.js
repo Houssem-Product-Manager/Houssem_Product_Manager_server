@@ -16,6 +16,20 @@ const createProduct = async (req, res) => {
     } = req.body;
     const userId = req.userId;
 
+    // Validate required fields
+    if (
+      !name ||
+      !numberInStock ||
+      !buyingPrice ||
+      !buyingDate ||
+      !photo ||
+      !priceToSell ||
+      !sizes ||
+      sizes.length === 0
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
     // Check if a product with the same name already exists
     const existingProduct = await Product.findOne({ name });
 
@@ -55,6 +69,7 @@ const createProduct = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const getAllProducts = async (req, res) => {
   try {
@@ -125,8 +140,8 @@ const updateProduct = async (req, res) => {
     const {
       name,
       numberInStock,
-      sellingPrice,
       buyingDate,
+      buyingPrice,
       photo,
       priceToSell,
       sizes,
@@ -135,7 +150,7 @@ const updateProduct = async (req, res) => {
     let updateData = {
       name,
       numberInStock,
-      sellingPrice,
+      buyingPrice,
       priceToSell,
       sizes: sizes.map((size) => ({ size: size.size, stock: size.stock })),
     };
