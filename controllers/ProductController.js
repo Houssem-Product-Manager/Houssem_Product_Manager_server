@@ -73,7 +73,7 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    // Query products where the seller field matches the provided user ID
+    // Query products and sort by buyingDate in descending order
     const products = await Product.find()
       .populate("buyer")
       .populate({
@@ -82,7 +82,8 @@ const getAllProducts = async (req, res) => {
           path: "seller",
           model: "User",
         },
-      });
+      })
+      .sort({ buyingDate: -1 }); // Sort by buyingDate in descending order
 
     if (!products || products.length === 0) {
       return res.status(404).json({ error: "No products found" });
@@ -94,6 +95,7 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const getProduct = async (req, res) => {
   try {
