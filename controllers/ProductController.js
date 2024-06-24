@@ -70,7 +70,6 @@ const createProduct = async (req, res) => {
   }
 };
 
-
 const getAllProducts = async (req, res) => {
   try {
     // Query products and sort by buyingDate in descending order
@@ -95,7 +94,9 @@ const getAllProducts = async (req, res) => {
         (currentDate - new Date(product.buyingDate)) / (1000 * 60 * 60 * 24)
       );
 
-      const isOldStock = ageInDays > 21;
+      const isOldStock = ageInDays > 30;
+      console.log()
+
       return {
         ...product.toObject(),
         ageInDays,
@@ -104,13 +105,12 @@ const getAllProducts = async (req, res) => {
       };
     });
 
-    res.status(200).json(productsWithAgeAndLabel);
+    return res.status(200).json(productsWithAgeAndLabel);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 const getProduct = async (req, res) => {
   try {

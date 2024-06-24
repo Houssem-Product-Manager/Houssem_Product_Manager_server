@@ -126,7 +126,7 @@ const getProductAgeAndLabel = (products) => {
       (currentDate - new Date(product.buyingDate)) / (1000 * 60 * 60 * 24)
     );
 
-    const isOldStock = ageInDays > 21;
+    const isOldStock = ageInDays > 30;
     return {
       ...product.toObject(),
       ageInDays,
