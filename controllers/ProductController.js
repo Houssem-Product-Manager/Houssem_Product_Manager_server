@@ -89,7 +89,22 @@ const getAllProducts = async (req, res) => {
       return res.status(404).json({ error: "No products found" });
     }
 
-    res.status(200).json(products);
+    const currentDate = new Date();
+    const productsWithAgeAndLabel = products.map((product) => {
+      const ageInDays = Math.floor(
+        (currentDate - new Date(product.buyingDate)) / (1000 * 60 * 60 * 24)
+      );
+
+      const isOldStock = ageInDays > 21;
+      return {
+        ...product.toObject(),
+        ageInDays,
+        isOldStock,
+        label: isOldStock ? "In Stock for a while" : "New Stock",
+      };
+    });
+
+    res.status(200).json(productsWithAgeAndLabel);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

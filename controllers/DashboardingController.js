@@ -18,7 +18,8 @@ const calculateRevenueAndProfit = (products) => {
       salesVolume += sale.quantitySold;
 
       // Calculate profit for the sale
-      const saleProfit = (sale.sellingPrice - product.buyingPrice) * sale.quantitySold;
+      const saleProfit =
+        (sale.sellingPrice - product.buyingPrice) * sale.quantitySold;
 
       // Add profit to the corresponding month
       if (!monthlyProfits[saleMonth]) {
@@ -91,12 +92,17 @@ const getDashboardStats = async (req, res) => {
       return res.status(404).json({ error: "No products found" });
     }
 
-    const { totalRevenue, totalProfit, salesVolume, totalMoneySpent, monthlyProfits } =
-      calculateRevenueAndProfit(products);
+    const {
+      totalRevenue,
+      totalProfit,
+      salesVolume,
+      totalMoneySpent,
+      monthlyProfits,
+    } = calculateRevenueAndProfit(products);
     const bestSellingProducts = getBestSellingProducts(products);
     const productWiseProfit = getProductWiseProfit(products);
     const inventoryValue = getInventoryValue(products);
-
+    const getProductAge = getProductAgeAndLabel(products);
     res.status(200).json({
       totalRevenue,
       totalProfit,
@@ -105,12 +111,31 @@ const getDashboardStats = async (req, res) => {
       productWiseProfit,
       inventoryValue,
       totalMoneySpent,
+      getProductAge,
       monthlyProfits, // Include monthly profits in the response
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
+};
+const getProductAgeAndLabel = (products) => {
+  const currentDate = new Date();
+  const productsWithAgeAndLabel = products.map((product) => {
+    const ageInDays = Math.floor(
+      (currentDate - new Date(product.buyingDate)) / (1000 * 60 * 60 * 24)
+    );
+
+    const isOldStock = ageInDays > 21;
+    return {
+      ...product.toObject(),
+      ageInDays,
+      isOldStock,
+      label: isOldStock ? "In Stock for a while" : "New Stock",
+    };
+  });
+
+  return productsWithAgeAndLabel;
 };
 
 module.exports = {
